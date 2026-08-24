@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>💪 健身记录</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #1a1a2e;
+            padding: 20px;
+        }
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .card h2 {
+            font-size: 16px;
+            margin-bottom: 16px;
+            color: #555;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #333;
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 15px;
+            background: #fff;
+            outline: none;
+            transition: border 0.2s;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #1a73e8;
+        }
+        .form-row {
+            display: flex;
+            gap: 12px;
+        }
+        .form-row .form-group {
+            flex: 1;
+        }
+        .form-row-3 {
+            display: flex;
+            gap: 8px;
+        }
+        .form-row-3 .form-group {
+            flex: 1;
+        }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #1a73e8;
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: #1557b0;
+        }
+        .btn-success {
+            background: #27ae60;
+            color: #fff;
+            margin-top: 8px;
+        }
+        .btn-success:hover {
+            background: #1e8449;
+        }
+        .btn-danger {
+            background: #e74c3c;
+            color: #fff;
+            margin-top: 8px;
+        }
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .record-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 16px;
+            border-radius: 12px;
+            background: #fafafa;
+            border: 1px solid #eee;
+            margin-bottom: 8px;
+        }
+        .record-item .left {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .record-item .sport {
+            font-weight: 600;
+            font-size: 15px;
+        }
+        .record-item .meta {
+            font-size: 13px;
+            color: #888;
+            line-height: 1.5;
+        }
+        .record-item .del-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #ccc;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        .record-item .del-btn:hover {
+            color: #e74c3c;
+            background: #fce8e6;
+        }
+        .empty-tip {
+            text-align: center;
+            color: #bbb;
+            padding: 30px 0;
+            font-size: 14px;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+            padding: 8px 0;
+        }
+        .stats .num {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a73e8;
+        }
+        .stats .label {
+            font-size: 12px;
+            color: #888;
+            margin-top: 2px;
+        }
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #323232;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        .toast.show { opacity: 1; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>💪 健身记录</h1>
+
+    <!-- 统计 -->
+    <div class="card">
+        <div class="stats">
+            <div>
+                <div class="num" id="totalCount">0</div>
+                <div class="label">总次数</div>
+            </div>
+            <div>
+                <div class="num" id="todayCount">0</div>
+                <div class="label">今日</div>
+            </div>
+            <div>
+                <div class="num" id="weekCount">0</div>
+                <div class="label">本周</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加记录 -->
+    <div class="card">
+        <h2>📝 添加记录</h2>
+        <!-- 日期：年、月、日 三个下拉 -->
+        <div class="form-row-3">
+            <div class="form-group">
+                <label>年</label>
+                <select id="yearSelect"></select>
+            </div>
+            <div class="form-group">
+                <label>月</label>
+                <select id="monthSelect"></select>
+            </div>
+            <div class="form-group">
+                <label>日</label>
+                <select id="daySelect"></select>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>开始时间</label>
+                <select id="startTime"></select>
+            </div>
+            <div class="form-group">
+                <label>结束时间</label>
+                <select id="endTime"></select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>运动项目</label>
+            <select id="sportType">
+                <option value="羽毛球">🏸 羽毛球</option>
+                <option value="跳绳">🪢 跳绳</option>
+                <option value="提壶">🏋️ 提壶</option>
+            </select>
+        </div>
+        <button class="btn btn-primary" onclick="addRecord()">✅ 保存记录</button>
+    </div>
+
+    <!-- 记录列表 + 导出 -->
+    <div class="card">
+        <h2>📋 历史记录</h2>
+        <div id="recordList"></div>
+        <button class="btn btn-success" onclick="exportExcel()">📊 导出 Excel</button>
+    </div>
+
+    <!-- 清空 -->
+    <button class="btn btn-danger" onclick="clearAll()">🗑️ 清空所有记录</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    // ====== 时间下拉：15分钟一档 ======
+    function generateTimeOptions() {
+        const options = [];
+        for (let h = 0; h < 24; h++) {
+            for (let m = 0; m < 60; m += 15) {
+                const val = String(h).padStart(2, "0") + ":" + String(m).padStart(2, "0");
+                options.push(val);
+            }
+        }
+        return options;
+    }
+
+    function populateTimeSelect(selectId) {
+        const select = document.getElementById(selectId);
+        const options = generateTimeOptions();
+        select.innerHTML = options.map(t => `<option value="${t}">${t}</option>`).join("");
+    }
+
+    // ====== 日期下拉 ======
+    function populateDateSelects() {
+        const now = new Date();
+        const curYear = now.getFullYear();
+        const curMonth = now.getMonth() + 1;
+        const curDay = now.getDate();
+
+        const yearSelect = document.getElementById("yearSelect");
+        let years = "";
+        for (let y = curYear - 5; y <= curYear + 5; y++) {
+            years += `<option value="${y}" ${y === curYear ? "selected" : ""}>${y}</option>`;
+        }
+        yearSelect.innerHTML = years;
+
+        const monthSelect = document.getElementById("monthSelect");
+        let months = "";
+        for (let m = 1; m <= 12; m++) {
+            months += `<option value="${m}" ${m === curMonth ? "selected" : ""}>${m}月</option>`;
+        }
+        monthSelect.innerHTML = months;
+
+        updateDays();
+        yearSelect.addEventListener("change", updateDays);
+        monthSelect.addEventListener("change", updateDays);
+    }
+
+    function updateDays() {
+        const year = parseInt(document.getElementById("yearSelect").value);
+        const month = parseInt(document.getElementById("monthSelect").value);
+        const maxDay = new Date(year, month, 0).getDate();
+
+        const daySelect = document.getElementById("daySelect");
+        const now = new Date();
+        const curDay = now.getDate();
+        let days = "";
+        for (let d = 1; d <= maxDay; d++) {
+            days += `<option value="${d}" ${d === curDay ? "selected" : ""}>${d}日</option>`;
+        }
+        daySelect.innerHTML = days;
+    }
+
+    function getSelectedDate() {
+        const y = document.getElementById("yearSelect").value;
+        const m = String(document.getElementById("monthSelect").value).padStart(2, "0");
+        const d = String(document.getElementById("daySelect").value).padStart(2, "0");
+        return `${y}-${m}-${d}`;
+    }
+
+    // ====== 本地存储 ======
+    function getRecords() {
+        try {
+            return JSON.parse(localStorage.getItem("fitness_records") || "[]");
+        } catch { return []; }
+    }
+
+    function saveRecords(records) {
+        localStorage.setItem("fitness_records", JSON.stringify(records));
+    }
+
+    // ====== 统计 ======
+    function updateStats() {
+        const records = getRecords();
+        const today = new Date();
+        const todayStr = today.toISOString().slice(0, 10);
+
+        const monday = new Date(today);
+        monday.setDate(today.getDate() - (today.getDay() === 0 ? 6 : today.getDay() - 1));
+        const mondayStr = monday.toISOString().slice(0, 10);
+
+        document.getElementById("totalCount").textContent = records.length;
+        document.getElementById("todayCount").textContent = records.filter(r => r.date === todayStr).length;
+        document.getElementById("weekCount").textContent = records.filter(r => r.date >= mondayStr && r.date <= todayStr).length;
+    }
+
+    // ====== 渲染列表（完整信息） ======
+    function renderList() {
+        const container = document.getElementById("recordList");
+        const records = getRecords();
+
+        if (records.length === 0) {
+            container.innerHTML = '<div class="empty-tip">还没有记录，开始运动吧 💪</div>';
+            return;
+        }
+
+        const sorted = [...records].reverse();
+        container.innerHTML = sorted.map((r, idx) => {
+            const realIdx = records.length - 1 - idx;
+            return `
+                <div class="record-item">
+                    <div class="left">
+                        <span class="sport">${r.sport}</span>
+                        <span class="meta">📅 ${r.date}<br>⏱ ${r.start} → ${r.end}</span>
+                    </div>
+                    <button class="del-btn" onclick="deleteRecord(${realIdx})">✕</button>
+                </div>
+            `;
+        }).join("");
+    }
+
+    // ====== 添加 ======
+    function addRecord() {
+        const date = getSelectedDate();
+        const start = document.getElementById("startTime").value;
+        const end = document.getElementById("endTime").value;
+        const sport = document.getElementById("sportType").value;
+
+        if (start >= end) { showToast("结束时间必须晚于开始时间"); return; }
+
+        const records = getRecords();
+        records.push({ date, start, end, sport });
+        saveRecords(records);
+
+        renderList();
+        updateStats();
+        showToast("✅ 记录已保存");
+    }
+
+    // ====== 删除 ======
+    function deleteRecord(index) {
+        const records = getRecords();
+        records.splice(index, 1);
+        saveRecords(records);
+        renderList();
+        updateStats();
+        showToast("已删除");
+    }
+
+    // ====== 清空 ======
+    function clearAll() {
+        if (!confirm("确定要清空所有健身记录吗？")) return;
+        saveRecords([]);
+        renderList();
+        updateStats();
+        showToast("已清空");
+    }
+
+    // ====== 导出 Excel ======
+    function exportExcel() {
+        const records = getRecords();
+        if (records.length === 0) {
+            showToast("暂无数据可导出");
+            return;
+        }
+
+        const sorted = [...records].sort((a, b) => a.date.localeCompare(b.date));
+        let csv = "日期,开始时间,结束时间,运动项目\n";
+        sorted.forEach(r => {
+            csv += `${r.date},${r.start},${r.end},${r.sport}\n`;
+        });
+
+        const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `健身记录_${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+
+        showToast("📊 已导出 CSV 文件，Excel 可直接打开");
+    }
+
+    // ====== Toast ======
+    function showToast(msg) {
+        const t = document.getElementById("toast");
+        t.textContent = msg;
+        t.classList.add("show");
+        setTimeout(() => t.classList.remove("show"), 2000);
+    }
+
+    // ====== 初始化 ======
+    populateDateSelects();
+    populateTimeSelect("startTime");
+    populateTimeSelect("endTime");
+    document.getElementById("startTime").value = "18:00";
+    document.getElementById("endTime").value = "19:00";
+
+    renderList();
+    updateStats();
+</script>
+</body>
+</html>
